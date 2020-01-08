@@ -1,65 +1,41 @@
 
-const fs = require('fs');
 const program = require('commander');
 const lib = require('./lib.js');
-
-const contactFile = process.env.npm_package_config_contacts;
-
 
 program
   .command('list')
   .description('Show list of contacts')
-  .action((source, destination) => {
-    fs.readFile(contactFile, (err, data) => {
+  .action(() => {
+    lib.listContacts(null, (err, result) => {
       if (!err) {
-        lib.listContacts(data);
-      } else {
-        console.log('error :', err);
-      }
+        result.forEach((contact) => {
+          console.log(String(contact.lastName).toUpperCase(), contact.firstName);
+        });
+      } else console.error(err);
     });
   });
 
 program
   .command('add')
   .description('Add a contact to the list of contacts')
-  .action((source, destination) => {
-    if (process.argv.length === 5) {
-      fs.readFile(contactFile, (err, data) => {
-        if (!err) {
-          const contact = new lib.Contact(0, process.argv[4], process.argv[3]);
-          fs.writeFile(contactFile, lib.addContact(data, contact), 'utf8', (err2) => {
-            if (err2) {
-              console.log('error :', err2);
-            }
-          });
-        } else {
-          console.log('error :', err);
-        }
-      });
-    } else {
-      console.log('no contact passed as parameter');
-    }
+  .action(() => {
+    if (process.argv.length !== 5) console.log('Not enough parameters');
+    else lib.addContact(new lib.Contact(process.argv[4], process.argv[3]));
   });
 
 program
   .command('remove')
   .description('Remove a contact to the list of contacts')
-  .action((source, destination) => {
-    if (process.argv.length === 4) {
-      fs.readFile(contactFile, (err, data) => {
-        if (!err) {
-          fs.writeFile(contactFile, lib.removeContact(data, process.argv[3]), 'utf8', (err2) => {
-            if (err2) {
-              console.log('error :', err2);
-            }
-          });
-        } else {
-          console.log('error :', err);
-        }
-      });
-    } else {
-      console.log('no contact passed as parameter');
-    }
+  .action(() => {
+    if (process.argv.length !== 4) console.log('Not enough parameters');
+    else lib.removeContact(process.argv[3]);
+  });
+
+program
+  .command('serve')
+  .description('Launch a server to manage the list of contacts')
+  .action(() => {
+    lib.server();
   });
 
 
